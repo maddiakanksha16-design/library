@@ -1,0 +1,48 @@
+<?php
+// books.php
+require 'db.php';
+$msg = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
+    $id = intval($_POST['id']);
+    $stmt = $mysqli->prepare("DELETE FROM books WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+    $msg = "Book removed.";
+}
+$books = $mysqli->query("SELECT * FROM books ORDER BY created_at DESC");
+?>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Books - Library</title>
+  <style>body{font-family:Arial;margin:20px} table{border-collapse:collapse;width:100%} td, th{border:1px solid #ddd;padding:8px}</style>
+</head>
+<body>
+  <a href="index.php">? Dashboard</a> | <a href="add_book.php">Add Book</a>
+  <h2>Books</h2>
+  <?php if($msg) echo "<p style='color:green;'>$msg</p>"; ?>
+  <table>
+    <tr><th>ID</th><th>ISBN</th><th>Title</th><th>Author</th><th>Copies</th><th>Available</th><th>Actions</th></tr>
+    <?php while($b = $books->fetch_assoc()): ?>
+      <tr>
+        <td><?php echo $b['id'] ?></td>
+        <td><?php echo htmlspecialchars($b['isbn']) ?></td>
+        <td><?php echo htmlspecialchars($b['title']) ?></td>
+        <td><?php echo htmlspecialchars($b['author']) ?></td>
+        <td><?php echo $b['copies'] ?></td>
+        <td><?php echo $b['available'] ?></td>
+        <td>
+          <a href="edit_book.php?id=<?php echo $b['id'] ?>">Edit</a>
+          <form style="display:inline" method="post" onsubmit="return confirm('Delete this book?')">
+            <input type="hidden" name="id" value="<?php echo $b['id'] ?>">
+            <input type="hidden" name="action" value="delete">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <?php endwhile; ?>
+  </table>
+</body>
+</html>

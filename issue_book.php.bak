@@ -1,0 +1,65 @@
+<?php
+// issue_book.php
+require 'db.php';
+$msg = '';
+// fetch available books and members
+$books = $mysqli->query("SELECT * FROM books WHERE available > 0");
+$members = $mysqli->query("SELECT * FROM members ORDER BY name");
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $book_id = intval($_POST['book_id']);
+    $member_id = intval($_POST['member_id']);
+    $issue_date = $_POST['issue_date'] ?: date('Y-m-d');
+    $due_date = $_POST['due_date'] ?: date('Y-m-d', strtotime('+7 days'));
+
+    // insert issue
+    $stmt = $mysqli->prepare("INSERT INTO issues (book_id, member_id, issue_date, due_date, status) VALUES (?, ?, ?, ?, 'issued')");
+    $stmt->bind_param("iiss", $book_id, $member_id, $issue_date, $due_date);
+    if ($stmt->execute()) {
+        // decrement available
+        $stmt2 = $mysqli->prepare("UPDATE books SET available = available - 1 WHERE id = ? AND available > 0");
+        $stmt2->bind_param("i", $book_id);
+        $stmt2->execute();
+        $stmt2->close();
+        $msg = "Book issued successfully.";
+    } else {
+        $msg = "Error: " . $stmt->error;
+    }
+    $stmt->close();
+    // reload books list
+    $books = $mysqli->query("SELECT * FROM books WHERE available > 0");
+}
+?>
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Issue Book</title></head>
+<body>
+  <a href="issues.php">? Back</a>
+  <h2>Issue Book</h2>
+  <?php if($msg) echo "<p style='color:green;'>$msg</p>"; ?>
+  <form method="post">
+    <label>Book<br>
+      <select name="book_id" required>
+        <option value="">-- select book --</option>
+        <?php while($b = $books->fetch_assoc()): ?>
+          <option value="<?php echo $b['id'] ?>"><?php echo htmlspecialchars($b['title'])." (Available: ".$b['available'].")" ?></option>
+        <?php endwhile; ?>
+      </select>
+    </label><br><br>
+
+    <label>Member<br>
+      <select name="member_id" required>
+        <option value="">-- select member --</option>
+        <?php while($m = $members->fetch_assoc()): ?>
+          <option value="<?php echo $m['id'] ?>"><?php echo htmlspecialchars($m['name']) ?></option>
+        <?php endwhile; ?>
+      </select>
+    </label><br><br>
+
+    <label>Issue Date<br><input type="date" name="issue_date" value="<?php echo date('Y-m-d') ?>"></label><br><br>
+    <label>Due Date<br><input type="date" name="due_date" value="<?php echo date('Y-m-d', strtotime('+7 days')) ?>"></label><br><br>
+
+    <button type="submit">Issue</button>
+  </form>
+</body>
+</html>

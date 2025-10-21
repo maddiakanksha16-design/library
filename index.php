@@ -1,0 +1,47 @@
+<?php
+// index.php
+?>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Library Management System</title>
+  <style>
+    body{font-family: Arial, Helvetica, sans-serif; margin:30px;}
+    nav a{margin-right:15px; text-decoration:none;}
+    .card{border:1px solid #ddd;padding:12px;border-radius:6px;width:300px;}
+  </style>
+</head>
+<body>
+  <h1>Library Management System</h1>
+  <nav>
+    <a href="books.php">Books</a>
+    <a href="members.php">Members</a>
+    <a href="issues.php">Issue / Return</a>
+  </nav>
+
+  <hr>
+
+  <div style="display:flex; gap: 12px;">
+    <div class="card">
+      <h3>Manage Books</h3>
+      <p>Add, edit, or remove books from the library.</p>
+      <a href="books.php">Open</a>
+    </div>
+
+    <div class="card">
+      <h3>Manage Members</h3>
+      <p>Register and manage library members.</p>
+      <a href="members.php">Open</a>
+	  <link rel="stylesheet" href="assets/style.css">
+
+    </div>
+
+    <div class="card">
+      <h3>Issue / Return</h3>
+      <p>Issue books to members and record returns.</p>
+      <a href="issues.php">Open</a>
+    </div>
+  </div>
+</body>
+</html>
